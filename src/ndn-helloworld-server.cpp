@@ -18,6 +18,8 @@
  * Author: Jerald Paul Abraham <jeraldabraham@email.arizona.edu>
  */
 
+#include "logger.hpp"
+
 #include <ndn-cxx/data.hpp>
 #include <ndn-cxx/face.hpp>
 #include <ndn-cxx/interest.hpp>
@@ -62,6 +64,12 @@ public:
     m_nMaximumInterests = maxInterests;
   }
 
+  void
+  setQuietLogging()
+  {
+    m_wantQuiet = true;
+  }
+
   int
   run()
   {
@@ -102,8 +110,7 @@ private:
     if (!m_nMaximumInterests || m_nInterestsReceived < *m_nMaximumInterests) {
       ndn::Data data(interest.getName());
 
-      if (pattern.m_freshnessPeriod >= 0_ms)
-        data.setFreshnessPeriod(ndn::time::milliseconds(1000));
+      data.setFreshnessPeriod(ndn::time::milliseconds(1000));
 
       std::string content = "Hello World!!!";
       data.setContent(ndn::makeStringBlock(ndn::tlv::Content, content));
@@ -147,6 +154,7 @@ private:
   ndn::KeyChain m_keyChain;
 
   std::optional<uint64_t> m_nMaximumInterests;
+  std::string m_prefix;
 
   uint64_t m_nInterestsReceived = 0;
 

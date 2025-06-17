@@ -18,6 +18,7 @@
  * Author: Italo Valcy <italovalcy@gmail.com>
  */
 
+#include "logger.hpp"
 
 #include <ndn-cxx/data.hpp>
 #include <ndn-cxx/face.hpp>
@@ -26,6 +27,7 @@
 #include <ndn-cxx/util/random.hpp>
 #include <ndn-cxx/util/time.hpp>
 
+#include <iostream>
 #include <chrono>
 #include <limits>
 #include <optional>
@@ -127,14 +129,13 @@ private:
   void
   onData(const ndn::Interest&, const ndn::Data& data)
   {
-    auto now = time::steady_clock::now();
     auto logLine = "Data Received Name=" + data.getName().toUri();
     m_logger.log(logLine, true, false);
 
     m_nInterestsReceived++;
 
     std::string receivedContent = readString(data.getContent());
-    m_logger.log("Received data: size=" << receivedContent.size() << " content=" << receivedContent, true, false);
+    m_logger.log("Received data: size=" + std::to_string(receivedContent.size()) + " content=" + receivedContent, true, false);
   }
 
   void
@@ -146,7 +147,7 @@ private:
   }
 
   void
-  onTimeout(const ndn::Interest& interest, int globalRef)
+  onTimeout(const ndn::Interest& interest)
   {
     auto logLine = "Interest Timed Out - Name=" + interest.getName().toUri();
     m_logger.log(logLine, true, false);
@@ -283,11 +284,6 @@ main(int argc, char* argv[])
   if (vm.count("help") > 0) {
     usage(std::cout, argv[0], visibleOptions);
     return 0;
-  }
-
-  if (configFile.empty()) {
-    usage(std::cerr, argv[0], visibleOptions);
-    return 2;
   }
 
   ndnhw::NdnHelloWorldClient client(prefix);
