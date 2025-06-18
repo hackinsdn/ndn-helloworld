@@ -152,7 +152,7 @@ private:
     ndn::Interest interest;
     interest.setName(name);
     interest.setCanBePrefix(false);
-    interest.setMustBeFresh(false);
+    interest.setMustBeFresh(true);
     interest.setNonce(getNewNonce());
     interest.setInterestLifetime(time::seconds(1));
 
