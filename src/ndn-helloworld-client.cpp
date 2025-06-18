@@ -73,18 +73,6 @@ public:
     m_interestInterval = interval;
   }
 
-  void
-  setQuietLogging()
-  {
-    m_wantQuiet = true;
-  }
-
-  void
-  setVerboseLogging()
-  {
-    m_wantVerbose = true;
-  }
-
   int
   run()
   {
@@ -129,8 +117,7 @@ private:
   void
   onData(const ndn::Interest&, const ndn::Data& data)
   {
-    auto logLine = "Data Received Name=" + data.getName().toUri();
-    m_logger.log(logLine, true, false);
+    m_logger.log("Data Received Name=" + data.getName().toUri(), true, false);
 
     m_nInterestsReceived++;
 
@@ -181,12 +168,8 @@ private:
           onTimeout(std::forward<decltype(args)>(args)...);
         });
 
-      if (!m_wantQuiet) {
-        auto logLine = "Sending Interest   - PatternType=" + m_prefix +
-                       ", GlobalID=" + std::to_string(m_nInterestsSent) +
-                       ", Name=" + interest.getName().toUri();
-        m_logger.log(logLine, true, false);
-      }
+      auto logLine = "Sending Interest Name=" + interest.getName().toUri();
+      m_logger.log(logLine, true, false);
     }
     catch (const std::exception& e) {
       m_logger.log("ERROR: "s + e.what(), true, true);
@@ -221,8 +204,6 @@ private:
   uint64_t m_nInterestsSent = 0;
   uint64_t m_nInterestsReceived = 0;
 
-  bool m_wantQuiet = false;
-  bool m_wantVerbose = false;
   bool m_hasError = false;
 };
 
@@ -252,8 +233,6 @@ main(int argc, char* argv[])
     ("count,c",     po::value<int64_t>(), "total number of Interests to be generated")
     ("interval,i",  po::value<std::chrono::milliseconds::rep>()->default_value(1000),
                     "Interest generation interval in milliseconds")
-    ("quiet,q",     po::bool_switch(), "turn off logging of Interest generation and Data reception")
-    ("verbose,v",   po::bool_switch(), "log additional per-packet information")
     ;
 
   po::options_description hiddenOptions;
@@ -304,18 +283,6 @@ main(int argc, char* argv[])
       return 2;
     }
     client.setInterestInterval(interval);
-  }
-
-  if (vm["quiet"].as<bool>()) {
-    if (vm["verbose"].as<bool>()) {
-      std::cerr << "ERROR: cannot set both '--quiet' and '--verbose'\n";
-      return 2;
-    }
-    client.setQuietLogging();
-  }
-
-  if (vm["verbose"].as<bool>()) {
-    client.setVerboseLogging();
   }
 
   return client.run();
